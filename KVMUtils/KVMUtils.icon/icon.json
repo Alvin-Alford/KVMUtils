@@ -1,0 +1,159 @@
+{
+  "fill-specializations" : [
+    {
+      "value" : {
+        "linear-gradient" : [
+          "extended-srgb:0.00000,0.53333,1.00000,1.00000",
+          "extended-srgb:0.00000,0.75294,0.90980,1.00000"
+        ],
+        "orientation" : {
+          "start" : {
+            "x" : 0.5,
+            "y" : 0
+          },
+          "stop" : {
+            "x" : 0.5,
+            "y" : 0.7
+          }
+        }
+      }
+    },
+    {
+      "appearance" : "dark",
+      "value" : {
+        "linear-gradient" : [
+          "extended-gray:0.00000,1.00000",
+          "gray:0.25000,1.00000"
+        ],
+        "orientation" : {
+          "start" : {
+            "x" : 0.5,
+            "y" : 0
+          },
+          "stop" : {
+            "x" : 0.5,
+            "y" : 0.7
+          }
+        }
+      }
+    }
+  ],
+  "groups" : [
+    {
+      "blur-material" : null,
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "fill" : {
+            "linear-gradient" : [
+              "extended-gray:1.00000,1.00000",
+              "extended-gray:0.75000,1.00000"
+            ],
+            "orientation" : {
+              "start" : {
+                "x" : 0,
+                "y" : 0
+              },
+              "stop" : {
+                "x" : 1,
+                "y" : 1
+              }
+            }
+          },
+          "image-name" : "display 2.svg",
+          "name" : "display 2",
+          "position" : {
+            "scale" : 2,
+            "translation-in-points" : [
+              -1.2889999999999873,
+              -143.24501678188847
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "linear-gradient" : [
+              "extended-gray:1.00000,1.00000",
+              "extended-gray:0.75000,1.00000"
+            ],
+            "orientation" : {
+              "start" : {
+                "x" : -0.4314973626679243,
+                "y" : -0.1313697233338251
+              },
+              "stop" : {
+                "x" : 1.3795378494533912,
+                "y" : 1.4439767025556751
+              }
+            }
+          },
+          "image-name" : "switch.2.svg",
+          "name" : "switch.2",
+          "position" : {
+            "scale" : 1.3,
+            "translation-in-points" : [
+              -1.2889999999999873,
+              -179
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "blur-material" : null,
+      "hidden" : false,
+      "layers" : [
+        {
+          "fill" : "automatic",
+          "glass" : true,
+          "image-name" : "computermouse.svg",
+          "name" : "computermouse",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              -211.00549999999998,
+              249.9675142181116
+            ]
+          }
+        },
+        {
+          "fill" : "automatic",
+          "image-name" : "keyboard.svg",
+          "name" : "keyboard",
+          "position" : {
+            "scale" : 1.1,
+            "translation-in-points" : [
+              121.99694999999997,
+              277.44291421811147
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
