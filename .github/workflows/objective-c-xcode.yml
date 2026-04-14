@@ -1,0 +1,95 @@
+name: Xcode - Build and Analyze
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and Analyse
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine Scheme and Project File
+        id: config
+        run: |
+          # 1. Find the project/workspace file
+          if ls -d *.xcworkspace >/dev/null 2>&1; then
+            FILE_TYPE="workspace"
+            FILE_NAME=$(ls -d *.xcworkspace | head -n 1)
+          elif ls -d *.xcodeproj >/dev/null 2>&1; then
+            FILE_TYPE="project"
+            FILE_NAME=$(ls -d *.xcodeproj | head -n 1)
+          else
+            echo "Error: No .xcodeproj or .xcworkspace found."
+            exit 1
+          fi
+
+          # 2. Get the first scheme using jq (more reliable than ruby)
+          # Note: xcodebuild -list -json outputs JSON
+          SCHEME_LIST=$(xcodebuild -list -json -"$FILE_TYPE" "$FILE_NAME")
+          
+          # Try to get scheme from 'project' key, fallback to 'workspace' if needed
+          DEFAULT_SCHEME=$(echo "$SCHEME_LIST" | jq -r '.project.targets[0] // .workspace.targets[0]')
+
+          if [ -z "$DEFAULT_SCHEME" ] || [ "$DEFAULT_SCHEME" == "null" ]; then
+            echo "Error: Could not determine default scheme."
+            exit 1
+          fi
+
+          echo "Using Scheme: $DEFAULT_SCHEME"
+          echo "Using File: $FILE_NAME ($FILE_TYPE)"
+
+          # Set outputs for next steps
+          echo "scheme=$DEFAULT_SCHEME" >> $GITHUB_OUTPUT
+          echo "file_type=$FILE_TYPE" >> $GITHUB_OUTPUT
+          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Build and Analyze
+        run: |
+          SCHEME="${{ steps.config.outputs.scheme }}"
+          FILE_TYPE="${{ steps.config.outputs.file_type }}"
+          FILE_NAME="${{ steps.config.outputs.file_name }}"
+
+          echo "Starting build for scheme: $SCHEME"
+
+          # IMPORTANT: Specify destination to avoid "multiple matching destinations" error
+          # For macOS builds on GitHub Actions, use 'generic/platform=macOS' or specific arch
+          DESTINATION="generic/platform=macOS"
+
+          xcodebuild clean build analyze \
+            -"$FILE_TYPE" "$FILE_NAME" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO | tee xcodebuild.log
+
+          # Check if build succeeded
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "Build failed!"
+            exit 1
+          fi
+
+          echo "Searching for built .app..."
+          find "$BUILD_DIR" -name "*.app" -type d | head -n 5
+
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Release-App-Bundle
+          # The .app is usually inside BuildOutput/Release/YourApp.app
+          path: BuildOutput/Release/*.app
+          retention-days: 7
+
+      - name: Upload Log on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Log
+          path: xcodebuild.log
