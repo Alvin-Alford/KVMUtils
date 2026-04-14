@@ -15,9 +15,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # - name: Select Xcode Version
-      #   run: sudo xcode-select -s /Applications/Xcode_15.4.app # Or your preferred version
-
       - name: Determine Scheme and Project File
         id: config
         run: |
@@ -61,4 +58,38 @@ jobs:
 
           echo "Starting build for scheme: $SCHEME"
 
-          # IMPORTANT: Specify destination to avoid "multiple
+          # IMPORTANT: Specify destination to avoid "multiple matching destinations" error
+          # For macOS builds on GitHub Actions, use 'generic/platform=macOS' or specific arch
+          DESTINATION="generic/platform=macOS"
+
+          xcodebuild clean build analyze \
+            -"$FILE_TYPE" "$FILE_NAME" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO | tee xcodebuild.log
+
+          # Check if build succeeded
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "Build failed!"
+            exit 1
+          fi
+
+          echo "Searching for built .app..."
+          find "$BUILD_DIR" -name "*.app" -type d | head -n 5
+
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Release-App-Bundle
+          # The .app is usually inside BuildOutput/Release/YourApp.app
+          path: BuildOutput/Release/*.app
+          retention-days: 7
+
+      - name: Upload Log on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Log
+          path: xcodebuild.log
