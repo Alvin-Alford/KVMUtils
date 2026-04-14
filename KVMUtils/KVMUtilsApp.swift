@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 import Observation
 import Foundation
+import ServiceManagement
 
 
 //@Observable
@@ -16,6 +17,22 @@ import Foundation
 //    var targetUSB: usbdeviceStruct? = nil
 //    var targetDisplay: displayStruct? = nil
 //}
+
+func toggleLoginItem() {
+    let appService = SMAppService.mainApp
+    
+    do {
+        if appService.status == .enabled {
+            try appService.unregister()
+            print("Unregistered from login items.")
+        } else {
+            try appService.register()
+            print("Registered for login items.")
+        }
+    } catch {
+        print("Failed to toggle login item: \(error.localizedDescription)")
+    }
+}
 
 
 @Model
@@ -74,6 +91,18 @@ struct KVMUtilsApp: App {
                 .frame(width: 300, height: 180)
                 //.environment(appSettings)
                 .modelContainer(container)
+                .onAppear {
+                    let appService = SMAppService.mainApp
+                    
+                    do {
+                        if appService.status != .enabled {
+                            try appService.register()
+                            print("Registered to login items.")
+                        }
+                    } catch {
+                        print("Failed to toggle login item: \(error.localizedDescription)")
+                    }
+                }
         }
             .menuBarExtraStyle(.window)
         

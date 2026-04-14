@@ -2,6 +2,9 @@ import SwiftUI
 import SwiftData
 import AppKit
 
+
+
+
 struct SettingsView: View {
     
     //@Environment(AppSettings.self) var appSettings
@@ -31,6 +34,8 @@ struct SettingsView: View {
         print("[Handling] USB removed: \(usb.productName ?? "unknown")")
         usbList.removeAll { isSameUSB($0, usb) }
     }
+    
+    
     
     var body: some View {
         VStack {

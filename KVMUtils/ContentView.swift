@@ -8,6 +8,27 @@
 import SwiftUI
 import SwiftData
 
+class MacStateMonitor {
+    var callbackFunc: () -> Void
+    
+    init(callback: @escaping () -> Void) {
+        callbackFunc = callback
+        setupPowerNotifications()
+    }
+    
+    private func setupPowerNotifications() {
+        let nc = NSWorkspace.shared.notificationCenter
+        nc.addObserver(self, selector: #selector(callback), name: NSWorkspace.willSleepNotification, object: nil)
+        nc.addObserver(self, selector: #selector(callback), name: NSWorkspace.didWakeNotification, object: nil)
+        nc.addObserver(self, selector: #selector(callback), name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
+        nc.addObserver(self, selector: #selector(callback), name: NSWorkspace.sessionDidBecomeActiveNotification, object: nil)
+    }
+    
+    @objc private func callback() {
+        print("callback called")
+        callbackFunc()
+    }
+}
 
 struct ContentView: View {
     @Environment(\.openWindow) private var openWindow
@@ -23,6 +44,8 @@ struct ContentView: View {
     @State private var virtualDisplayManager: VirtualDisplayManager = VirtualDisplayManager()
     
     @State private var monitor: USBMonitor? = nil
+    @State private var systemStateMonitor: MacStateMonitor? = nil
+    
     @State private var isEnabled = false
     @State private var showPopup: Bool = false
     @State private var displaysList: [displayStruct] = []
@@ -30,6 +53,19 @@ struct ContentView: View {
     @State private var targetDisplay: displayStruct? = nil
     
     @State private var isListening: Bool = false
+    
+    func updateThingy() {
+        let currentUSBDevices = getUSBDevices()
+        if let targetUSB = appSettings.targetUSB {
+            if currentUSBDevices.contains(where: { isSameUSB($0, targetUSB) }) {
+                print("target already connected")
+                startVirtualDisplay()
+            } else {
+                print("target not connected when started")
+                stopVirtualDisplay()
+            }
+        }
+    }
     
     func handleUSBadd(usb: usbdeviceStruct) {
         if isListening {
@@ -154,6 +190,10 @@ struct ContentView: View {
                 if let monitor = monitor {
                     monitor.startMonitoring()
                 }
+            }
+            
+            if systemStateMonitor == nil {
+                systemStateMonitor = MacStateMonitor(callback: updateThingy)
             }
         }
     }
